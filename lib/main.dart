@@ -1,23 +1,38 @@
 import 'package:flutter/material.dart';
-
-final List<String> users = ["Tom", "Alice", "Sam", "Bob", "Kate"];
+import 'package:flutter/services.dart';
 
 void main() {
-  runApp(
-    MaterialApp(
-      home: Scaffold(
-        body: ListView.separated(
-          padding: const EdgeInsets.all(8),
-          itemCount: users.length,
-          separatorBuilder: (BuildContext context, int index) => Divider(),
-          itemBuilder: (BuildContext context, int index) {
-            return ListTile(
-              title: Text(users[index], style: TextStyle(fontSize: 22)),
-            );
-          },
+  runApp(const MaterialApp(home: MyCustomForm()));
+}
+
+class MyCustomForm extends StatefulWidget {
+  const MyCustomForm({super.key});
+
+  @override
+  State<MyCustomForm> createState() => _MyCustomFormState();
+}
+
+class _MyCustomFormState extends State<MyCustomForm> {
+  @override
+  Widget build(BuildContext context) {
+    final numberFormatter = FilteringTextInputFormatter.allow(RegExp(r'[0-9]'));
+    final lengthFormatter = LengthLimitingTextInputFormatter(3);
+
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [numberFormatter, lengthFormatter],
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'cvv',
+            ),
+          ),
         ),
-        appBar: AppBar(title: Text("METANIT.COM")),
       ),
-    ),
-  );
+    );
+  }
 }
