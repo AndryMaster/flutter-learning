@@ -1,36 +1,94 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 void main() {
-  runApp(const MaterialApp(home: MyCustomForm()));
+  runApp(MyApp());
 }
 
-class MyCustomForm extends StatefulWidget {
-  const MyCustomForm({super.key});
-
-  @override
-  State<MyCustomForm> createState() => _MyCustomFormState();
-}
-
-class _MyCustomFormState extends State<MyCustomForm> {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final numberFormatter = FilteringTextInputFormatter.allow(RegExp(r'[0-9]'));
-    final lengthFormatter = LengthLimitingTextInputFormatter(3);
+    return MaterialApp(debugShowCheckedModeBanner: false, home: PageA());
+  }
+}
 
+class MyColors {
+  static const red = Color(0xFFFF2C00);
+  static const green = Color(0xFF00DA72);
+  static const blue = Color(0xFF4042EE);
+}
+
+class PageA extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Page A'),
+        backgroundColor: MyColors.blue,
+      ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            inputFormatters: [numberFormatter, lengthFormatter],
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'cvv',
+        child: TextButton(
+          child: const Text('Go to «Page B»'),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PageB()),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class PageB extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Page B'),
+        backgroundColor: MyColors.green,
+      ),
+      body: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              child: const Text('Go back'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
             ),
-          ),
+            const SizedBox(width: 16),
+            TextButton(
+              child: const Text('Go to «Page C»'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PageC()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PageC extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Page C'),
+        backgroundColor: MyColors.red,
+      ),
+      body: Center(
+        child: TextButton(
+          child: const Text('Go back'),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
     );
