@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 's.dart';
 
 void main() {
   runApp(MyApp());
@@ -7,90 +8,29 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: PageA());
-  }
-}
+    return MaterialApp(
+      locale: S.locale,
+      supportedLocales: S.supportedLocales,
+      localizationsDelegates: S.localizationDelegates,
 
-class MyColors {
-  static const red = Color(0xFFFF2C00);
-  static const green = Color(0xFF00DA72);
-  static const blue = Color(0xFF4042EE);
-}
-
-class PageA extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Page A'),
-        backgroundColor: MyColors.blue,
-      ),
-      body: Center(
-        child: TextButton(
-          child: const Text('Go to «Page B»'),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PageB()),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class PageB extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Page B'),
-        backgroundColor: MyColors.green,
-      ),
-      body: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              child: const Text('Go back'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+      title: 'My App',
+      home: Builder(
+        builder: (context) {
+          return Scaffold(
+            appBar: AppBar(title: Text(S.of(context).appTitle)),
+            body: Center(
+              child: Text(S.of(context)
+                  .pushCount(DateTime.now(), 2, PronounStyle.informal),
+              ),
             ),
-            const SizedBox(width: 16),
-            TextButton(
-              child: const Text('Go to «Page C»'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PageC()),
-                );
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 }
 
-class PageC extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Page C'),
-        backgroundColor: MyColors.red,
-      ),
-      body: Center(
-        child: TextButton(
-          child: const Text('Go back'),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-    );
-  }
+class PronounStyle {
+  static const formal = 'formal';
+  static const informal = 'informal';
 }
