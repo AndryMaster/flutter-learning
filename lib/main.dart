@@ -1,130 +1,166 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 
-void main() => runApp(MyApp());
+/// Intervals
+
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData.light().copyWith(
+        scaffoldBackgroundColor: Colors.white,
+      ),
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(),
-      home: const Scaffold(
-        backgroundColor: Color(0xFFd9e2fc),
-        body: Center(
-          child: AnimatedFlipWrapper(),
-        ),
-      ),
+      home: const ButtonScreen(),
     );
   }
 }
 
-class AnimatedFlip extends StatelessWidget {
-  final Widget front;
-  final Widget back;
-  final VoidCallback onTap;
-  final bool isFlipped;
-
-  const AnimatedFlip({
-    required this.front,
-    required this.back,
-    required this.onTap,
-    required this.isFlipped,
-    super.key,
-  });
+class ButtonScreen extends StatefulWidget {
+  const ButtonScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: TweenAnimationBuilder(
-        duration: const Duration(milliseconds: 700),
-        curve: Curves.easeOut,
-        tween: Tween<double>(
-          begin: 0,
-          end: isFlipped ? 180 : 0,
-        ),
-        builder: (context, value, child) {
-          final content = value < 90
-              ? front
-              : RotationY(
-            rotationY: 180,
-            child: back,
-          );
+  State<ButtonScreen> createState() => _ButtonScreenState();
+}
 
-          return RotationY(
-            rotationY: value,
-            child: content,
-          );
-        },
-      ),
+class _ButtonScreenState extends State<ButtonScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: _Button()),
     );
   }
 }
 
-class AnimatedFlipWrapper extends StatefulWidget {
-  const AnimatedFlipWrapper({super.key});
+class _Button extends StatefulWidget {
+  const _Button();
 
   @override
-  State<AnimatedFlipWrapper> createState() => _AnimatedFlipWrapperState();
+  State<_Button> createState() => _ButtonState();
 }
 
-class _AnimatedFlipWrapperState extends State<AnimatedFlipWrapper> {
-  bool isFlipped = false;
+class _ButtonState extends State<_Button>
+    with SingleTickerProviderStateMixin<_Button> {
+  late final AnimationController _scaleController = AnimationController(
+    vsync: this,
+    duration: const Duration(
+      milliseconds: 600,
+    ),
+  );
+
+  late final Animation<double> _hide = Tween<double>(
+    begin: 1,
+    end: 0,
+  ).animate(
+    CurvedAnimation(
+      parent: _scaleController,
+      curve: const Interval(
+        0.0,
+        0.5,
+      ),
+    ),
+  );
+  late final Animation<double> _show = Tween<double>(
+    begin: 0,
+    end: 1,
+  ).animate(
+    CurvedAnimation(
+      parent: _scaleController,
+      curve: const Interval(
+        0.5,
+        1,
+      ),
+    ),
+  );
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedFlip(
-      front: const Card(
-        color: Colors.red,
-        child: SizedBox(
-          width: 150,
-          height: 150,
-          child: Center(
-            child: Text('Test test'),
+    return Stack(
+      children: [
+        Center(
+          child: AnimatedBuilder(
+            animation: _show,
+            child: Center(
+              child: GestureDetector(
+                onTap: _handleTap,
+                child: const _Loader(),
+              ),
+            ),
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _show.value,
+                child: child,
+              );
+            },
           ),
         ),
-      ),
-      back: const Card(
-        color: Colors.blue,
-        child: SizedBox(
-          width: 150,
-          height: 150,
-          child: Center(
-            child: Text('Яндекс Образование'),
+        Center(
+          child: SizedBox(
+            width: 250,
+            height: 56,
+            child: AnimatedBuilder(
+              animation: _hide,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                ),
+                onPressed: _handleTap,
+                child: const Center(child: Text('TAP ME')),
+              ),
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _hide.value,
+                  child: child,
+                );
+              },
+            ),
           ),
         ),
-      ),
-      isFlipped: isFlipped,
-      onTap: () {
-        setState(() {
-          isFlipped = !isFlipped;
-        });
-      },
+      ],
     );
+  }
+
+  void _handleTap() {
+    if (_isLoading) {
+      _scaleController.reverse();
+    } else {
+      _scaleController.forward();
+    }
+
+    setState(() {
+      _isLoading = !_isLoading;
+    });
   }
 }
 
-class RotationY extends StatelessWidget {
-  static const double _degrees2Radians = pi / 180;
-
-  final Widget child;
-  final double rotationY;
-
-  const RotationY({
-    required this.child,
-    this.rotationY = 0,
-    super.key,
-  });
+class _Loader extends StatelessWidget {
+  const _Loader();
 
   @override
   Widget build(BuildContext context) {
-    return Transform(
-      alignment: FractionalOffset.center,
-      transform: Matrix4.identity()
-        ..setEntry(3, 2, 0.001)
-        ..rotateY(rotationY * _degrees2Radians),
-      child: child,
+    return Container(
+      width: 49,
+      height: 49,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.redAccent,
+      ),
+      clipBehavior: Clip.hardEdge,
+      padding: const EdgeInsets.all(11),
+      child: const CircularProgressIndicator(
+        color: Colors.white,
+      ),
     );
   }
 }
