@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() => runApp(MyApp());
 
@@ -8,107 +9,122 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light(),
-      home: const CurvesExampleWrapper(),
+      home: const Scaffold(
+        backgroundColor: Color(0xFFd9e2fc),
+        body: Center(
+          child: AnimatedFlipWrapper(),
+        ),
+      ),
     );
   }
 }
 
-class CurvesExample extends StatelessWidget {
-  final bool selected;
-  final Color color;
-  final Curve curve;
+class AnimatedFlip extends StatelessWidget {
+  final Widget front;
+  final Widget back;
+  final VoidCallback onTap;
+  final bool isFlipped;
 
-  const CurvesExample({
-    required this.selected,
-    required this.color,
-    required this.curve,
+  const AnimatedFlip({
+    required this.front,
+    required this.back,
+    required this.onTap,
+    required this.isFlipped,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedAlign(
-      alignment: selected ? Alignment.bottomCenter : Alignment.topCenter,
-      duration: const Duration(seconds: 1),
-      curve: curve,
-      child: GestureDetector(
-        child: Card(
-          color: color,
-          child: const SizedBox(
-            width: 100.0,
-            height: 100.0,
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: TweenAnimationBuilder(
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeOut,
+        tween: Tween<double>(
+          begin: 0,
+          end: isFlipped ? 180 : 0,
         ),
+        builder: (context, value, child) {
+          final content = value < 90
+              ? front
+              : RotationY(
+            rotationY: 180,
+            child: back,
+          );
+
+          return RotationY(
+            rotationY: value,
+            child: content,
+          );
+        },
       ),
     );
   }
 }
 
-class CurvesExampleWrapper extends StatefulWidget {
-  const CurvesExampleWrapper({super.key});
+class AnimatedFlipWrapper extends StatefulWidget {
+  const AnimatedFlipWrapper({super.key});
 
   @override
-  State<CurvesExampleWrapper> createState() => _CurvesExampleWrapperState();
+  State<AnimatedFlipWrapper> createState() => _AnimatedFlipWrapperState();
 }
 
-class _CurvesExampleWrapperState extends State<CurvesExampleWrapper> {
-  bool selected = false;
+class _AnimatedFlipWrapperState extends State<AnimatedFlipWrapper> {
+  bool isFlipped = false;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 24,
-            ),
-            Expanded(
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 116.0),
-                    child: CurvesExample(
-                      selected: selected,
-                      curve: MyLinearCurve(),
-                      color: Colors.blue,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 116.0),
-                    child: CurvesExample(
-                      selected: selected,
-                      curve: Curves.easeIn,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(
-              height: 24,
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  selected = !selected;
-                });
-              },
-              child: const Text('Анимировать'),
-            ),
-            const SizedBox(
-              height: 24,
-            ),
-          ],
+    return AnimatedFlip(
+      front: const Card(
+        color: Colors.red,
+        child: SizedBox(
+          width: 150,
+          height: 150,
+          child: Center(
+            child: Text('Test test'),
+          ),
         ),
       ),
+      back: const Card(
+        color: Colors.blue,
+        child: SizedBox(
+          width: 150,
+          height: 150,
+          child: Center(
+            child: Text('Яндекс Образование'),
+          ),
+        ),
+      ),
+      isFlipped: isFlipped,
+      onTap: () {
+        setState(() {
+          isFlipped = !isFlipped;
+        });
+      },
     );
   }
 }
 
-// Созданная нами Curves.linear
-class MyLinearCurve extends Curve {
-  @override
-  double transformInternal(double t) => t;
-}
+class RotationY extends StatelessWidget {
+  static const double _degrees2Radians = pi / 180;
 
+  final Widget child;
+  final double rotationY;
+
+  const RotationY({
+    required this.child,
+    this.rotationY = 0,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform(
+      alignment: FractionalOffset.center,
+      transform: Matrix4.identity()
+        ..setEntry(3, 2, 0.001)
+        ..rotateY(rotationY * _degrees2Radians),
+      child: child,
+    );
+  }
+}
